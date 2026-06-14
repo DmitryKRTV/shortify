@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package shortify.v1;
+
+option go_package = "shortify/server/api/gen/shortify/v1;shortifyv1";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (AuthResponse);
+  rpc Login(LoginRequest) returns (AuthResponse);
+}
+
+service LinkService {
+  rpc CreateLink(CreateLinkRequest) returns (Link);
+  rpc ListLinks(ListLinksRequest) returns (ListLinksResponse);
+  rpc DeleteLink(DeleteLinkRequest) returns (DeleteLinkResponse);
+  rpc GetLinkStats(GetLinkStatsRequest) returns (LinkStats);
+  rpc ResolveLink(ResolveLinkRequest) returns (ResolveLinkResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  string token = 1;
+}
+
+message CreateLinkRequest {
+  string url = 1;
+}
+
+message ListLinksRequest {}
+
+message ListLinksResponse {
+  repeated Link links = 1;
+}
+
+message DeleteLinkRequest {
+  string id = 1;
+}
+
+message DeleteLinkResponse {}
+
+message GetLinkStatsRequest {
+  string id = 1;
+}
+
+message LinkStats {
+  int64 total_clicks = 1;
+  repeated Click recent = 2;
+}
+
+message ResolveLinkRequest {
+  string code = 1;
+}
+
+message ResolveLinkResponse {
+  string original_url = 1;
+}
+
+message Link {
+  string id = 1;
+  string original_url = 2;
+  string short_code = 3;
+  string short_url = 4;
+  int64 click_count = 5;
+  string created_at = 6;
+}
+
+message Click {
+  string id = 1;
+  string link_id = 2;
+  string ip = 3;
+  string user_agent = 4;
+  string created_at = 5;
+}
