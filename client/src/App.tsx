@@ -1,17 +1,24 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   Link,
   LinkStats,
+  MSG_PROFANITY,
+  MSG_INVALID_URL,
   createLink,
   deleteLink,
   getClickCount,
   getStats,
+  hasProfanity,
+  isValidUrl,
   listLinks,
   login,
   register,
   resolveShortUrl
 } from "./api";
 import "./styles.css";
+
+const CREATE_TIMEOUT_MS = 3_000;
+const ERROR_MS = 3_000;
 
 function displayShortUrl(shortUrl: string): string {
   try {
@@ -30,23 +37,43 @@ function displayShortUrl(shortUrl: string): string {
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem("token") || "");
   const [email, setEmail] = useState(
-    () => localStorage.getItem("userEmail") || "demo@example.com"
+    () => localStorage.getItem("userEmail") || ""
   );
-  const [password, setPassword] = useState("secret123");
+  const [password, setPassword] = useState("");
   const [url, setUrl] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
   const [stats, setStats] = useState<LinkStats | null>(null);
   const [statsLinkId, setStatsLinkId] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [creating, setCreating] = useState(false);
+  const errorTimerRef = useRef<number | null>(null);
 
   const isAuthed = token !== "";
 
+  function showError(message: string) {
+    if (errorTimerRef.current !== null) {
+      window.clearTimeout(errorTimerRef.current);
+    }
+    setError(message);
+    errorTimerRef.current = window.setTimeout(() => {
+      setError("");
+      errorTimerRef.current = null;
+    }, ERROR_MS);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (errorTimerRef.current !== null) {
+        window.clearTimeout(errorTimerRef.current);
+      }
+    };
+  }, []);
+
   async function run(action: () => Promise<void>) {
-    setError("");
     try {
       await action();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      showError(err instanceof Error ? err.message : "Unknown error");
     }
   }
 
@@ -82,11 +109,31 @@ function App() {
 
   async function onCreate(event: FormEvent) {
     event.preventDefault();
-    await run(async () => {
+    if (creating) return;
+
+    if (hasProfanity(url)) {
+      showError(MSG_PROFANITY);
+      return;
+    }
+
+    if (!isValidUrl(url)) {
+      showError(MSG_INVALID_URL);
+      return;
+    }
+
+    setCreating(true);
+    const timeoutId = window.setTimeout(() => setCreating(false), CREATE_TIMEOUT_MS);
+
+    try {
       await createLink(token, url);
       setUrl("");
       await refreshLinks();
-    });
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      window.clearTimeout(timeoutId);
+      setCreating(false);
+    }
   }
 
   function logout() {
@@ -122,9 +169,9 @@ function App() {
           )}
         </header>
 
-        {isAuthed && <hr className="header-divider" />}
+        {error && <p className="error">{error}</p>}
 
-        {error && <pre className="error">{error}</pre>}
+        {isAuthed && <hr className="header-divider" />}
 
         {!isAuthed ? (
           <form className="form">
@@ -132,13 +179,18 @@ function App() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="email"
+              type="email"
+              autoComplete="email"
             />
+            <p className="field-hint">Use a valid email, e.g. name@example.com</p>
             <input
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="password"
               type="password"
+              minLength={6}
             />
+            <p className="field-hint">Password must be at least 6 characters.</p>
             <div className="row">
               <button onClick={onRegister}>Register</button>
               <button onClick={onLogin} type="button">
@@ -148,13 +200,15 @@ function App() {
           </form>
         ) : (
           <>
-            <form className="form" onSubmit={onCreate}>
+            <form className="form form-create" onSubmit={onCreate}>
               <input
                 value={url}
                 onChange={(event) => setUrl(event.target.value)}
                 placeholder="https://example.com"
               />
-              <button>Create short link</button>
+              <button disabled={creating} type="submit">
+                Create short link
+              </button>
             </form>
 
             <div className="table-wrap">

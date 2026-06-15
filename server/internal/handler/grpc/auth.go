@@ -40,6 +40,14 @@ func mapError(err error) error {
 	switch err {
 	case domain.ErrInvalidInput:
 		return status.Error(codes.InvalidArgument, "invalid input")
+	case domain.ErrInvalidEmail:
+		return status.Error(codes.InvalidArgument, "invalid email format")
+	case domain.ErrPasswordTooShort:
+		return status.Error(codes.InvalidArgument, "А что ещё у тебя такое же короткое как этот пароль?")
+	case domain.ErrProfanity:
+		return status.Error(codes.InvalidArgument, "Фу как некультурно")
+	case domain.ErrInvalidURL:
+		return status.Error(codes.InvalidArgument, "invalid url")
 	case domain.ErrInvalidCreds:
 		return status.Error(codes.Unauthenticated, "invalid credentials")
 	case domain.ErrForbidden:

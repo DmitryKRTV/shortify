@@ -4,3 +4,4 @@ PLAN.md
 *.env
 !*.env.example
 cloudflared.log
+scripts

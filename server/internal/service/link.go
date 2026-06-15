@@ -44,9 +44,12 @@ type LinkView struct {
 
 func (s *LinkService) Create(ctx context.Context, userID uuid.UUID, originalURL string) (*LinkView, error) {
 	originalURL = strings.TrimSpace(originalURL)
+	if containsProfanity(originalURL) {
+		return nil, domain.ErrProfanity
+	}
 	parsed, err := url.ParseRequestURI(originalURL)
 	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
-		return nil, domain.ErrInvalidInput
+		return nil, domain.ErrInvalidURL
 	}
 
 	code, err := shortcode.Generate(8)

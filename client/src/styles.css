@@ -30,6 +30,12 @@ body {
   font-size: 0.95rem;
 }
 
+.field-hint {
+  margin: -4px 0 0;
+  color: #8b95a8;
+  font-size: 0.85rem;
+}
+
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -63,6 +69,43 @@ body {
   display: grid;
   gap: 12px;
   margin: 20px 0;
+}
+
+.form-create {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.form-create input,
+.form-create button {
+  min-height: 46px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  line-height: 1.2;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.form-create input {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-create button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .form-create {
+    flex-direction: column;
+  }
+
+  .form-create button {
+    width: 100%;
+  }
 }
 
 .row {
@@ -104,6 +147,19 @@ button {
 
 button:hover {
   background: #5968eb;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background: #6d7cff;
+}
+
+.btn-secondary:disabled:hover {
+  background: #232936;
 }
 
 .table-wrap {
@@ -227,11 +283,14 @@ a {
 }
 
 .error {
+  margin: 0 0 16px;
   padding: 12px;
   white-space: pre-wrap;
   background: #3a1820;
   border: 1px solid #733140;
   border-radius: 10px;
+  color: #ffc9d4;
+  font-size: 0.95rem;
 }
 
 .stats {

@@ -26,8 +26,14 @@ func NewAuthService(users *repository.UserRepository, tokens *auth.TokenManager)
 
 func (s *AuthService) Register(ctx context.Context, email string, password string) (string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
-	if !validateEmail(email) || len(password) < 6 {
-		return "", domain.ErrInvalidInput
+	if authContainsProfanity(email, password) {
+		return "", domain.ErrProfanity
+	}
+	if !validateEmail(email) {
+		return "", domain.ErrInvalidEmail
+	}
+	if len(password) < 6 {
+		return "", domain.ErrPasswordTooShort
 	}
 
 	_, err := s.users.FindByEmail(ctx, email)
@@ -56,8 +62,11 @@ func (s *AuthService) Register(ctx context.Context, email string, password strin
 
 func (s *AuthService) Login(ctx context.Context, email string, password string) (string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
+	if authContainsProfanity(email, password) {
+		return "", domain.ErrProfanity
+	}
 	if !validateEmail(email) {
-		return "", domain.ErrInvalidInput
+		return "", domain.ErrInvalidEmail
 	}
 
 	user, err := s.users.FindByEmail(ctx, email)

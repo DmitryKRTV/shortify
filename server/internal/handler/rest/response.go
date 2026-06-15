@@ -21,6 +21,18 @@ func writeError(w http.ResponseWriter, err error) {
 	case domain.ErrInvalidInput:
 		status = http.StatusBadRequest
 		message = "invalid input"
+	case domain.ErrInvalidEmail:
+		status = http.StatusBadRequest
+		message = "invalid email format"
+	case domain.ErrPasswordTooShort:
+		status = http.StatusBadRequest
+		message = "А что ещё у тебя такое же короткое как этот пароль?"
+	case domain.ErrProfanity:
+		status = http.StatusBadRequest
+		message = "Фу как некультурно"
+	case domain.ErrInvalidURL:
+		status = http.StatusBadRequest
+		message = "invalid url"
 	case domain.ErrInvalidCreds:
 		status = http.StatusUnauthorized
 		message = "invalid credentials"

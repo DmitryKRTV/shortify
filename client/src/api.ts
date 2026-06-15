@@ -1,4 +1,67 @@
+import { hasProfanity as checkProfanity } from "./profanity";
+
 const API_URL = import.meta.env.VITE_API_URL || "";
+
+const MIN_PASSWORD_LENGTH = 6;
+
+export const MSG_PROFANITY = "Фу как некультурно";
+export const MSG_INVALID_URL = "Enter a valid URL, e.g. https://example.com";
+export const MSG_PASSWORD_SHORT =
+  "А что ещё у тебя такое же короткое как этот пароль?";
+
+export function hasProfanity(value: string): boolean {
+  return checkProfanity(value);
+}
+const API_ERROR_MESSAGES: Record<string, string> = {
+  "invalid email format": "Enter a valid email address.",
+  "invalid url": MSG_INVALID_URL,
+  [MSG_PASSWORD_SHORT]: MSG_PASSWORD_SHORT,
+  [MSG_PROFANITY]: MSG_PROFANITY,
+  "invalid input": "Invalid email or password.",
+  "invalid credentials": "Invalid email or password.",
+  "already exists": "This email is already registered."
+};
+
+function assertNoProfanity(email: string, password: string) {
+  if (checkProfanity(email) || checkProfanity(password)) {
+    throw new Error(MSG_PROFANITY);
+  }
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+function assertValidEmail(email: string) {
+  if (!isValidEmail(email)) {
+    throw new Error("Enter a valid email address.");
+  }
+}
+
+export function isValidUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function formatApiError(text: string): string {
+  try {
+    const data = JSON.parse(text) as { error?: string };
+    if (data.error && API_ERROR_MESSAGES[data.error]) {
+      return API_ERROR_MESSAGES[data.error];
+    }
+    if (data.error) {
+      return data.error;
+    }
+  } catch {
+    // plain text response
+  }
+
+  return text || "Unknown error";
+}
 
 export type Link = {
   id: string;
@@ -34,7 +97,7 @@ async function request<T>(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `HTTP ${response.status}`);
+    throw new Error(formatApiError(text) || `HTTP ${response.status}`);
   }
 
   if (response.status === 204) {
@@ -45,6 +108,13 @@ async function request<T>(
 }
 
 export async function register(email: string, password: string) {
+  assertNoProfanity(email, password);
+  assertValidEmail(email);
+
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(MSG_PASSWORD_SHORT);
+  }
+
   return request<{ token: string }>("/auth/register", {
     method: "POST",
     body: JSON.stringify({ email, password })
@@ -52,6 +122,9 @@ export async function register(email: string, password: string) {
 }
 
 export async function login(email: string, password: string) {
+  assertNoProfanity(email, password);
+  assertValidEmail(email);
+
   return request<{ token: string }>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password })
@@ -59,6 +132,13 @@ export async function login(email: string, password: string) {
 }
 
 export async function createLink(token: string, url: string) {
+  if (checkProfanity(url)) {
+    throw new Error(MSG_PROFANITY);
+  }
+  if (!isValidUrl(url)) {
+    throw new Error(MSG_INVALID_URL);
+  }
+
   return request<Link>(
     "/api/v1/links",
     {
