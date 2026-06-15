@@ -21,12 +21,42 @@ body {
   background: #171b24;
   border: 1px solid #2b3242;
   border-radius: 16px;
+  overflow: hidden;
 }
 
 .hint {
   margin: 0;
   color: #8b95a8;
   font-size: 0.95rem;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.app-header-main {
+  min-width: 0;
+}
+
+.app-header-main h1 {
+  margin: 0 0 8px;
+}
+
+.app-header-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.header-divider {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid #2b3242;
 }
 
 .form {
@@ -43,6 +73,15 @@ body {
 
 .between {
   justify-content: space-between;
+}
+
+.user-label {
+  color: #dbe4ff;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 input {
@@ -67,17 +106,63 @@ button:hover {
   background: #5968eb;
 }
 
-table {
+.table-wrap {
   width: 100%;
+  max-width: 100%;
   margin-top: 20px;
+  overflow-x: auto;
+}
+
+.links-table {
+  width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.links-table .col-short {
+  width: 36%;
+}
+
+.links-table .col-original {
+  width: 36%;
+}
+
+.links-table .col-clicks {
+  width: 72px;
+}
+
+.links-table .col-actions {
+  width: 176px;
 }
 
 th,
 td {
-  padding: 12px;
+  padding: 10px 12px;
   border-bottom: 1px solid #2b3242;
   text-align: left;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.url-cell {
+  max-width: 0;
+}
+
+.url-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clicks-cell {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+thead .clicks-cell {
+  text-align: center;
 }
 
 a {
@@ -87,19 +172,24 @@ a {
 .short-cell {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .short-link {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   color: #8ea2ff;
-  overflow-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .btn-secondary {
-  flex-shrink: 0;
+  flex: 0 0 auto;
   padding: 6px 10px;
   border: 1px solid #354056;
   border-radius: 8px;
@@ -112,9 +202,28 @@ a {
   background: #2d3444;
 }
 
+.actions-cell {
+  overflow: visible;
+  white-space: nowrap;
+}
+
 .actions {
   display: flex;
-  gap: 8px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.actions button {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.actions-header {
+  text-align: right;
 }
 
 .error {

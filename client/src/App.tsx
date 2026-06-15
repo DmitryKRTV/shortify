@@ -13,9 +13,25 @@ import {
 } from "./api";
 import "./styles.css";
 
+function displayShortUrl(shortUrl: string): string {
+  try {
+    const { hostname, pathname } = new URL(shortUrl);
+    const code = pathname.replace(/^\//, "");
+    const host =
+      hostname.length > 22
+        ? `${hostname.slice(0, 10)}…${hostname.slice(-10)}`
+        : hostname;
+    return `${host}/${code}`;
+  } catch {
+    return shortUrl;
+  }
+}
+
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem("token") || "");
-  const [email, setEmail] = useState("demo@example.com");
+  const [email, setEmail] = useState(
+    () => localStorage.getItem("userEmail") || "demo@example.com"
+  );
   const [password, setPassword] = useState("secret123");
   const [url, setUrl] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
@@ -49,6 +65,7 @@ function App() {
     await run(async () => {
       const result = await register(email, password);
       localStorage.setItem("token", result.token);
+      localStorage.setItem("userEmail", email);
       setToken(result.token);
     });
   }
@@ -58,6 +75,7 @@ function App() {
     await run(async () => {
       const result = await login(email, password);
       localStorage.setItem("token", result.token);
+      localStorage.setItem("userEmail", email);
       setToken(result.token);
     });
   }
@@ -73,6 +91,7 @@ function App() {
 
   function logout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("userEmail");
     setToken("");
     setLinks([]);
     setStats(null);
@@ -86,12 +105,24 @@ function App() {
   return (
     <main className="page">
       <section className="card">
-        <h1>Shortify</h1>
-        <p className="hint">
-          {isAuthed
-            ? "Paste a link and get a short version."
-            : "Sign in to shorten links and view click stats."}
-        </p>
+        <header className="app-header">
+          <div className="app-header-main">
+            <h1>Shortify</h1>
+            <p className="hint">
+              {isAuthed
+                ? "Paste a link and get a short version."
+                : "Sign in to shorten links and view click stats."}
+            </p>
+          </div>
+          {isAuthed && (
+            <div className="app-header-user">
+              <span className="user-label">{email}</span>
+              <button onClick={logout}>Logout</button>
+            </div>
+          )}
+        </header>
+
+        {isAuthed && <hr className="header-divider" />}
 
         {error && <pre className="error">{error}</pre>}
 
@@ -117,11 +148,6 @@ function App() {
           </form>
         ) : (
           <>
-            <div className="row between">
-              <span>Authorized</span>
-              <button onClick={logout}>Logout</button>
-            </div>
-
             <form className="form" onSubmit={onCreate}>
               <input
                 value={url}
@@ -131,13 +157,20 @@ function App() {
               <button>Create short link</button>
             </form>
 
-            <table>
+            <div className="table-wrap">
+            <table className="links-table">
+              <colgroup>
+                <col className="col-short" />
+                <col className="col-original" />
+                <col className="col-clicks" />
+                <col className="col-actions" />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Short</th>
                   <th>Original</th>
-                  <th>Clicks</th>
-                  <th>Actions</th>
+                  <th className="clicks-cell">Clicks</th>
+                  <th className="actions-header">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -146,15 +179,16 @@ function App() {
 
                   return (
                   <tr key={link.id}>
-                    <td>
+                    <td className="url-cell">
                       <div className="short-cell">
                         <a
                           href={shortUrl}
                           className="short-link"
                           rel="noreferrer"
                           target="_blank"
+                          title={shortUrl}
                         >
-                          {shortUrl}
+                          {displayShortUrl(shortUrl)}
                         </a>
                         <button
                           type="button"
@@ -165,9 +199,12 @@ function App() {
                         </button>
                       </div>
                     </td>
-                    <td>{link.original_url}</td>
-                    <td>{getClickCount(link)}</td>
-                    <td className="actions">
+                    <td className="url-cell" title={link.original_url}>
+                      <span className="url-text">{link.original_url}</span>
+                    </td>
+                    <td className="clicks-cell">{getClickCount(link)}</td>
+                    <td className="actions-cell">
+                      <div className="actions">
                       <button
                         onClick={() =>
                           run(async () => {
@@ -197,12 +234,14 @@ function App() {
                       >
                         Delete
                       </button>
+                      </div>
                     </td>
                   </tr>
                   );
                 })}
               </tbody>
             </table>
+            </div>
 
             {stats && (
               <section className="stats">
