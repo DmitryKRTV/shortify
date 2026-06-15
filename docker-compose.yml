@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: shortify
+      POSTGRES_PASSWORD: shortify
+      POSTGRES_DB: shortify
+    ports:
+      - "15432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shortify -d shortify"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build: ./server
+    environment:
+      HTTP_PORT: 8080
+      GRPC_PORT: 9090
+      DATABASE_URL: postgres://shortify:shortify@postgres:5432/shortify?sslmode=disable
+      JWT_SECRET: change-me
+      BASE_URL: http://localhost:3000
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  client:
+    build: ./client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:

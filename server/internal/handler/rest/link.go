@@ -102,9 +102,16 @@ func (h *LinkHandler) Stats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	recentPublic := make([]map[string]string, len(recent))
+	for i, click := range recent {
+		recentPublic[i] = map[string]string{
+			"created_at": click.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"total_clicks": total,
-		"recent":       recent,
+		"recent":       recentPublic,
 	})
 }
 

@@ -20,7 +20,7 @@ func Load() *Config {
 	return &Config{
 		HTTPPort:    envOr("HTTP_PORT", "8080"),
 		GRPCPort:    envOr("GRPC_PORT", "9090"),
-		DatabaseURL: envOr("DATABASE_URL", "postgres://shortify:shortify@localhost:5432/shortify?sslmode=disable"),
+		DatabaseURL: envOr("DATABASE_URL", "postgres://shortify:shortify@localhost:15432/shortify?sslmode=disable"),
 		JWTSecret:   envOr("JWT_SECRET", "change-me"),
 		BaseURL:     strings.TrimRight(envOr("BASE_URL", "http://localhost:8080"), "/"),
 	}

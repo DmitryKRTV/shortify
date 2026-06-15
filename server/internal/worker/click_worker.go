@@ -79,3 +79,7 @@ func (w *ClickWorker) save(ctx context.Context, event ClickEvent) {
 		slog.Error("failed to save click", "error", err)
 	}
 }
+
+func (w *ClickWorker) Stop() {
+	w.wg.Wait()
+}

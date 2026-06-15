@@ -38,7 +38,7 @@ type LinkView struct {
 	OriginalURL string    `json:"original_url"`
 	ShortCode   string    `json:"short_code"`
 	ShortURL    string    `json:"short_url"`
-	ClicksCount int64     `json:"clicks_count"`
+	ClickCount  int64     `json:"click_count"`
 	CreatedAt   string    `json:"created_at"`
 }
 
@@ -138,7 +138,7 @@ func (s *LinkService) toView(ctx context.Context, link *domain.Link) (*LinkView,
 		OriginalURL: link.OriginalURL,
 		ShortCode:   link.ShortCode,
 		ShortURL:    s.baseURL + "/" + link.ShortCode,
-		ClicksCount: count,
+		ClickCount:  count,
 		CreatedAt:   link.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}, nil
 }

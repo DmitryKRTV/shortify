@@ -111,7 +111,7 @@ func toProtoLink(link *service.LinkView) *shortifyv1.Link {
 		OriginalUrl: link.OriginalURL,
 		ShortCode:   link.ShortCode,
 		ShortUrl:    link.ShortURL,
-		ClickCount:  link.ClicksCount,
+		ClickCount:  link.ClickCount,
 		CreatedAt:   link.CreatedAt,
 	}
 }
